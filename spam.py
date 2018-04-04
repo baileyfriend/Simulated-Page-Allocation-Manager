@@ -3,57 +3,15 @@ Bailey Freund
 SPAM
 4/1/17
 '''
-
-"""
-STRUCTURES TO IMPLEMENT: 
-1. a structure that mimics a process control block (PCB) of a process. A real PCB holds tons of information about a process, such as: pid, pointer (or index) to page table, size of segments, etc.
-2. a page table data structure for mapping logical to physical addresses
-3. implement a frame table (to simulate the contents of simulated RAM)
-4. maintain the free frame list
-5. other relevant data structures
-"""
+# import
 import math as math
+import sys
+
 # Define constants
 page_size = float(512) # bytes
-physical_memory = 4096 #bytes
+physical_memory = 4096 # bytes
 
 num_frames = int(physical_memory/page_size) # 8 pages
-
-# hardware_frames = { # dict of frames (by addr) mapped to whether they are free or not
-#     0: 1, 
-#     512: 1, 
-#     1024: 1,
-#     1536: 1,
-#     2048: 1,
-#     2560: 1,
-#     3072: 1,
-#     3584: 1
-#     } # 1 means free, 0 means used - init to all free
-
-# hardware_frames = { # dict of frames (by addr) mapped to whether they are free or not
-#     0: 1,
-#     1: 1, 
-#     2: 1,
-#     3: 1,
-#     4: 1,
-#     5: 1,
-#     6: 1,
-#     7: 1
-#     }
-
-
-
-"""
-The memory manager simulation will proceed approximately as described below:
-Your program (simulating the OS loader) is presented with the size of code and data segments of an executable to be loaded to memory
-Given the page size of 512 bytes, the loader determines the number of pages for code and data segments. Note: they are mapped separately, i.e. your simulation program shall use two page tables per process: one for mapping pages of the text/code segment, and another one for data segment
-Like an OS, your simulation program creates these page table structures for each process required to map logical page numbers to physical frame numbers.
-It then inspects the list of free frames and allocate the number of required frames in the simulated RAM, claim these frames on behalf of the process.
-It then updates the page table and list of free frames accordingly.
-Your simulation program shall then display the process page tables showing the mapping of pages to frames for that process.
-Your simulation program must also display the page frame table (showing the memory map of physical memory and its contents)
-When a program terminates, all physical frames allocated to the process are reclaimed by the (simulated) OS, its page table is disposed and other relevant data structures are updated
-"""
 
 class Process:
     def __init__(self, pid, textsize, datasize, physical_memory):
@@ -68,6 +26,7 @@ class Process:
 
 
 
+
 class Row:
     def __init__(self, frame, segment, pid, page_num):
         self.frame = frame
@@ -75,6 +34,7 @@ class Row:
         self.pid = pid
         self.page_num = page_num
         self.is_free = False
+
 
 
 
@@ -135,15 +95,11 @@ class PhysicalMemory:
 
 
 
-
-
-
-class PageTable:
+class PageTable: # every process has 2 page tables - 1 for code(aka text) and one for data
     def __init__(self, pid, size, segment, physical_memory):
         self.pid = pid
         self.size = size
         self.segment = segment
-        # self.frames
         self.num_pages = math.ceil(size/page_size)
         self.frames = []
         
@@ -172,31 +128,23 @@ class PageTable:
         for frame in self.frames:
             print('%s       %s' % (page, frame))
 
+
+
 class PCB: 
     def __init__(self, pid, text_page_table, data_page_table, segment_size):
         self.pid = pid
         self.text_page_table_index = text_page_table
         self.data_page_table_index = data_page_table
-        self.segment_size = segment_size
-
-# class Loader:
-#     def __init__(self, hardware_frames):
-#         print('Loader initialized')
-#         self.frames = hardware_frames
-#         self.free_frames = 
-
-#     def check_for_free_frames(self):
-#         for frame, is_free in self.frames.items():
-#             if is_free == 1:
-#                 return frame
-#         return 'No free frames'
-            
+        self.segment_size = segment_size         
     
 
 
 if __name__ == '__main__':
+    filename = sys.argv[1]
+    print('Using file %s' % filename)
+
     physical_memory = PhysicalMemory()
-    with open("run", "r") as f: # https://stackoverflow.com/questions/35226903/python-3-5-1-reading-from-a-file
+    with open(filename, "r") as f: # https://stackoverflow.com/questions/35226903/python-3-5-1-reading-from-a-file
         content = f.read()
         run_list = content.split('\n') 
     
@@ -211,6 +159,3 @@ if __name__ == '__main__':
         else: # halt the process
             pid = run_process_split[0]
             physical_memory.halt(pid)
-
-        
-    
